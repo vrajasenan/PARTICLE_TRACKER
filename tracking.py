@@ -6,8 +6,7 @@ distances = []
 
 def neighbours(particle_centers):
 
-    distances1 = []
-    distances2 = []
+
     dist = cdist(particle_centers,particle_centers)
 
 
