@@ -4,7 +4,9 @@ import tracking
 from scipy.spatial.distance import cdist
 import matplotlib.pyplot as plt
 from scipy import ndimage
+#im adding a comment and a random variable
 
+q=1
 
 h = 0
 h1 = 400
