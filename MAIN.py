@@ -1,57 +1,30 @@
 import cv2
 import numpy as np
 import tracking
-
+from scipy.spatial.distance import cdist
 import matplotlib.pyplot as plt
 from scipy import ndimage
 
 
-
-
-h = 0
-h1 = 400
+h = 200
+h1 = 1000
 w = 0
 w1 = 300
-angle = 0.8#transformation to get correct alignment
-filter = 10
-
-length = 2.0#mm
-breadth = 0.1#mm
-height = 0.1#mm
-volume = (length*breadth*height)*0.001
-concen = 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+angle = -89.1#transformation to get correct alignment
+filter = 115
+p1 = 146
+p2 = 165
+d = p2-p1
+channel_width = 100#microns
 
 
 particle_centers = []#from current frame
 particle_id = []#labels from current frame
 
-cap = cv2.VideoCapture("")
+cap = cv2.VideoCapture("C:\\Users\\vraja\\PycharmProjects\\BD_PROJECT\data\\117to702ul_min_beadtosheath\\afterexpansion.avi")
 
 _,frame = cap.read()
-frame = frame[0:h1, 0:w1]
+frame = frame#[0:h1, 0:w1]
 frame = ndimage.rotate(frame, angle)
 
 frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
@@ -59,11 +32,13 @@ frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
 averageValue1 = np.float32(frame)
 
 
+
+
 while True:
     particle_centers = []  # from current frame
     particle_id = []  # labels from current frame
     _,frame = cap.read()
-    frame1 = frame[0:h1, 0:w1]
+    frame1 = frame#[0:h1, 0:w1]
     frame1 = ndimage.rotate(frame1, angle)
 
     frame1 = cv2.cvtColor(frame1,cv2.COLOR_BGR2GRAY)
@@ -89,17 +64,17 @@ while True:
 
                     particle_id.append(i)
                     cv2.rectangle(frame1, (x, y), (x + w, y + h), (255, 255, 0), 1)
-                    i = i+1;
+                    i = i+1
 
-        if i != 0:
+        if i > 1:
             resulttrack = tracking.neighbours(particle_centers)
-            concen = concen+tracking.concentration(particle_centers,volume)
+            #print(i)
+            #print(resulttrack)
 
                 #if resulttrack:
                  #   print("result is : ",resulttrack)
     cv2.line(frame1, (filter, 0), (filter, 400), (255, 255, 0), thickness=1)
-
-
+    cv2.line(frame1, (p1, 100), (p2, 100), (255, 255, 0), thickness=1)
 
     cv2.imshow('result of difference', frame1)
 
@@ -117,19 +92,28 @@ cap.release()
 # De-allocate any associated memory usage
 cv2.destroyAllWindows()
 
+
+
+[float(i) for i in resulttrack]
+resultf= [i *(channel_width/d) for i in resulttrack]
+
+
 fig = plt.figure(figsize=(10, 7))
-bins=range(0, 300+5 + 5, 5)
+bins=range(0, 1000 + 50, 50)
 
-mean = np.mean(resulttrack)
-print("mean is :",mean)
+mean = np.mean(resultf)
+std = np.std(resultf)
+print("result is:",resultf)
+print("mean in um :",mean)
+print("std in um :",std)
 
-plt.hist(resulttrack, bins, alpha=0.5, label='x',density=True)
 
+plt.hist(resultf, bins, alpha=0.5, label='spacing distribution',density=True,cumulative=True)
+plt.xlabel('Spacing (um)')
+plt.ylabel('Relative frequency')
 plt.legend(loc='upper right')
 plt.show()
-
-
-plt.title("Numpy Histogram")
+plt.title("Spacing Distribution")
 
 
 
